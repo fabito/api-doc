@@ -23,12 +23,25 @@
 
   <script type="text/javascript">
     $(function () {
-      var url = window.location.search.match(/url=([^&]+)/);
+      var e = document.getElementById("input_baseUrl");
+      var url = e.options[e.selectedIndex].value;
+      
+      pathArray = location.href.split( '/' );
+      protocol = pathArray[0];
+      host = pathArray[2];
+      var url = protocol + '//' + host + e.options[e.selectedIndex].value;
+      
+      /*
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        url = "http://localhost:8000/cards/swagger.yaml";
+        pathArray = location.href.split( '/' );
+        protocol = pathArray[0];
+        host = pathArray[2];
+        url = protocol + '//' + host + "/cards/swagger.yaml";
       }
+      */
+      
       window.swaggerUi = new SwaggerUi({
         url: url,
         dom_id: "swagger-ui-container",
@@ -89,7 +102,12 @@
   <div class="swagger-ui-wrap">
     <a id="logo" href="http://swagger.io">swagger</a>
     <form id='api_selector'>
-      <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
+      <div class='input'>
+        <select id="input_baseUrl" name="baseUrl">
+            <option value="/cards/swagger.yaml">Cards API</option>
+        </select>
+           <!--   <input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/> -->
+      </div>
       <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
       <div class='input'><a id="explore" href="#">Explore</a></div>
     </form>
