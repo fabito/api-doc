@@ -18,251 +18,377 @@ basePath: /v1
 produces:
   - application/json
 paths:
-  /products:
+  /cards:
     get:
-      summary: Product Types
+      summary: Search Cards
       description: |
-        The Products endpoint returns information about the *Uber* products
-        offered at a given location. The response includes the display name
-        and other details about each product, and lists the products in the
-        proper display order.
+        The Search Cards endpoint returns a *list of cards* that matches a
+        specific search criteria. All cards returned may also contain information
+        such as attachments, user activities (like, dislike, etc) and comments.
       parameters:
-        - name: latitude
+        - name: accessToken
           in: query
-          description: Latitude component of location.
+          description: Access token required to make this API call
           required: true
-          type: number
-          format: double
-        - name: longitude
+          type: string 
+        - name: q
           in: query
-          description: Longitude component of location.
+          description: Search term that will be used to filter content. Example = google cloud
           required: true
-          type: number
-          format: double
-      tags:
-        - Products
-      responses:
-        200:
-          description: An array of products
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Product'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /estimates/price:
-    get:
-      summary: Price Estimates
-      description: |
-        The Price Estimates endpoint returns an estimated price range
-        for each product offered at a given location. The price estimate is
-        provided as a formatted string with the full price range and the localized
-        currency symbol.<br><br>The response also includes low and high estimates,
-        and the [ISO 4217](http://en.wikipedia.org/wiki/ISO_4217) currency code for
-        situations requiring currency conversion. When surge is active for a particular
-        product, its surge_multiplier will be greater than 1, but the price estimate
-        already factors in this multiplier.
-      parameters:
-        - name: start_latitude
-          in: query
-          description: Latitude component of start location.
-          required: true
-          type: number
-          format: double
-        - name: start_longitude
-          in: query
-          description: Longitude component of start location.
-          required: true
-          type: number
-          format: double
-        - name: end_latitude
-          in: query
-          description: Latitude component of end location.
-          required: true
-          type: number
-          format: double
-        - name: end_longitude
-          in: query
-          description: Longitude component of end location.
-          required: true
-          type: number
-          format: double
-      tags:
-        - Estimates
-      responses:
-        200:
-          description: An array of price estimates by product
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/PriceEstimate'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /estimates/time:
-    get:
-      summary: Time Estimates
-      description: The Time Estimates endpoint returns ETAs for all products offered at a given location, with the responses expressed as integers in seconds. We recommend that this endpoint be called every minute to provide the most accurate, up-to-date ETAs.
-      parameters:
-        - name: start_latitude
-          in: query
-          description: Latitude component of start location.
-          required: true
-          type: number
-          format: double
-        - name: start_longitude
-          in: query
-          description: Longitude component of start location.
-          required: true
-          type: number
-          format: double
-        - name: customer_uuid
-          in: query
           type: string
-          format: uuid
-          description: Unique customer identifier to be used for experience customization.
-        - name: product_id
+        - name: personId
           in: query
-          type: string
-          description: Unique identifier representing a specific product for a given latitude & longitude.
-      tags:
-        - Estimates
-      responses:
-        200:
-          description: An array of products
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Product'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /me:
-    get:
-      summary: User Profile
-      description: The User Profile endpoint returns information about the Uber user that has authorized with the application.
-      tags:
-        - User
-      responses:
-        200:
-          description: Profile information for a user
-          schema:
-            $ref: '#/definitions/Profile'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /history:
-    get:
-      summary: User Activity
-      description: The User Activity endpoint returns data about a user's lifetime activity with Uber. The response will include pickup locations and times, dropoff locations and times, the distance of past requests, and information about which products were requested.<br><br>The history array in the response will have a maximum length based on the limit parameter. The response value count may exceed limit, therefore subsequent API requests may be necessary.
-      parameters:
-        - name: offset
-          in: query
+          description: Represents the person of whom Smart Canvas will make this request on behalf of
+          required: false
           type: integer
-          format: int32
-          description: Offset the list of returned results by this amount. Default is zero.
+          format: int64
+        - name: authToken
+          in: query
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: false
+          type: string
+        - name: locale
+          in: query
+          description: |
+            Locale to be used. Locales used the following format [language]-[country].
+            If ommited, Smart Canvas will use the default locale to handle this request.
+            Examples = pt-br, en-us
+          required: false
+          type: string
         - name: limit
           in: query
+          description: |
+            Maximum number of cards to retrieve. If ommited, Smart Canvas will use the default page size
+            configured for this tenant.
+            Example: 10
+          required: false
           type: integer
           format: int32
-          description: Number of items to retrieve. Default is 5, maximum is 100.
+        - name: initDate
+          in: query
+          description: Returns only cards with publishing date >= this parameter. Format = yyyy-mm-dd
+          required: false
+          type: string
+          format: date
+        - name: endDate
+          in: query
+          description: Returns only cards with publishing date <= this parameter. Format = yyyy-mm-dd
+          required: false
+          type: string
+          format: date
+        - name: category
+          in: query
+          description: Returns only cards that have this specific category
+          required: false
+          type: string
+        - name: curationStrategy
+          in: query
+          description: Curation strategy to be used for this request. If ommited, it will uses the default strategy.
+          required: false
+          type: string
+        - name: fields
+          in: query
+          description: |
+            The fields to include in the response. If ommited, the response will contain all fields.
+            See documentation for possible values. Example = title,summary,content.
+          required: false
+          type: string
+        - name: embed
+          in: query
+          description: |
+            List of related entities to include in the response. If ommited, the response will contain all entities.
+            Possible values are: categoryNames, author, contentProvider, attachments, userActivities, permission, locale.
+            Example = author,attachments
+
+          type: string
       tags:
-        - User
+        - Card
       responses:
         200:
-          description: History information for the given user
+          description: An array of cards
           schema:
-            $ref: '#/definitions/Activities'
+            type: array
+            items:
+              $ref: '#/definitions/Card'
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
 definitions:
-  Product:
+  Card:
     properties:
-      product_id:
-        type: string
-        description: Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles.
-      description:
-        type: string
-        description: Description of product.
-      display_name:
-        type: string
-        description: Display name of product.
-      capacity:
-        type: string
-        description: Capacity of product. For example, 4 people.
-      image:
-        type: string
-        description: Image URL representing the product.
-  PriceEstimate:
-    properties:
-      product_id:
-        type: string
-        description: Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles
-      currency_code:
-        type: string
-        description: "[ISO 4217](http://en.wikipedia.org/wiki/ISO_4217) currency code."
-      display_name:
-        type: string
-        description: Display name of product.
-      estimate:
-        type: string
-        description: Formatted string of estimate in local currency of the start location. Estimate could be a range, a single number (flat rate) or "Metered" for TAXI.
-      low_estimate:
-        type: number
-        description: Lower bound of the estimated price.
-      high_estimate:
-        type: number
-        description: Upper bound of the estimated price.
-      surge_multiplier:
-        type: number
-        description: Expected surge multiplier. Surge is active if surge_multiplier is greater than 1. Price estimate already factors in the surge multiplier.
-  Profile:
-    properties:
-      first_name:
-        type: string
-        description: First name of the Uber user.
-      last_name:
-        type: string
-        description: Last name of the Uber user.
-      email:
-        type: string
-        description: Email address of the Uber user
-      picture:
-        type: string
-        description: Image URL of the Uber user.
-      promo_code:
-        type: string
-        description: Promo code of the Uber user.
-  Activity:
-    properties:
-      uuid:
-        type: string
-        description: Unique identifier for the activity
-  Activities:
-    properties:
-      offset:
+      id:
         type: integer
-        format: int32
-        description: Position in pagination.
-      limit:
+        format: int64
+        description: Unique identifier for a card in Smart Canvas
+      mnemonic:
+        type: string
+        description: Card mnemonic. The mnemonic is used to compose the URL of the card.
+      title:
+        type: string
+        description: Title of the card
+      summary:
+        type: string
+        description: Summary of the card
+      content:
+        type: string
+        description: Content of the card
+      community:
+        type: string
+        description: The community that this card belongs to
+      communityDisplayName:
+        type: string
+        description: Display name for the community
+      createDate:
         type: integer
-        format: int32
-        description: Number of items to retrieve (100 max).
-      count:
+        format: int64
+        description: Timestamp of this card creation
+      updateDate:
         type: integer
-        format: int32
-        description: Total number of items available.
-      history:
+        format: int64
+        description: Timestamp of this card creation
+      publishDate:
+        type: integer
+        format: int64
+        description: Timestamp of this card publishing
+      expirationDate:
+        type: integer
+        format: int64
+        description: Timestamp of this card expiration
+      isAutoModerated:
+        type: boolean
+        description: Indicates if this card is auto-moderated or not
+      jsonExtendedData:
+        type: string
+        description: JSON data with extra information saved with this card
+      preferredCanvas:
+        type: string
+        description: Mnemonic of the preferred Card Canvas to render this card
+      categoryNames:
+        type: array
+        items: 
+          type: string
+        description: Categories (tags) associated to this card
+      author:
         type: array
         items:
-          $ref: '#/definitions/Activity'
+          $ref: '#/definitions/Author'
+        description: Author of this card
+      contentProvider:
+        type: array
+        items:
+          $ref: '#/definitions/ContentProvider'
+        description: Information about the original source of this card
+      attachments:
+        type: array
+        items:
+          $ref: '#/definitions/Attachment'
+        description: Attachments contained in this card
+      userActivities:
+        type: array
+        items:
+          $ref: '#/definitions/UserActivity'
+        description: Information about user activities such as like, share etc
+      permission:
+        type: array
+        items:
+          $ref: '#/definitions/Permission'
+        description: Security model data, includes security level and user / group permissions
+      locale:
+        type: array
+        items:
+          $ref: '#/definitions/Locale'
+        description: Locale and i18n information
+      
+
+  Author:
+    properties:
+      authorId:
+        type: integer
+        format: int64
+        description: Author identification in Smart Canvas. That's a Person ID.
+      authorDisplayName:
+        type: string
+        description: Author display name
+      authorAlias:
+        type: string
+        description: Author authorAlias
+      authorImageURL:
+        type: string
+        description: Author image URL
+  
+  ContentProvider:
+    properties:
+      providerId:
+        type: string
+        description: Identifies the provider, the original source of this content. Example = googleplus
+      providerContentId:
+        type: string
+        description: Identifies this content on its original source
+      providerContentURL:
+        type: string
+        description: Original URL of this content on its provider
+      providerUserId:
+        type: string
+        description: The identifier of the author on the provider
+
+  Attachment:
+    properties:
+      type:
+        type: string
+        description: Type of this attachment
+      displayName:
+        type: string
+        description: Display name of this attachment
+      contentURL:
+        type: string
+        description: Content URL for this attachment
+      imageURL:
+        type: string
+        description: Image URL for this attachment
+      imageType:
+        type: string
+        description: Type of this image
+      imageHeight:
+        type: integer
+        format: int32
+        description: Image height
+      imageWidth:
+        type: integer
+        format: int32
+        description: Image width
+      originalImageURL:
+        type: string
+        description: Original image URL on the content provider
+      fullImageHeight:
+        type: integer
+        format: int32
+        description: Full image height
+      fullImageWidth:
+        type: integer
+        format: int32
+        description: Full image width
+      embedURL:
+        type: string
+        format: Embed URL for this attachment
+      tableau:
+        type: array
+        items:
+          $ref: '#/definitions/Tableau'
+
+  Tableau:
+    properties:
+      tableauUrl:
+        type: string
+        description: Tableau URL
+      tableauSource:
+        type: string
+        description: Tableau source
+      worksheetName:
+        type: string
+        description: Tableau worksheet name
+      tableauOriginalImage:
+        type: string
+        description: Tableau original image
+      tableauCachedImage:
+        type: string
+        description: Tableau cached image
+
+
+  UserActivity:
+    properties:
+      like:
+        type: boolean
+        description: Indicates if the current user likes this card or not
+      dislike:
+        type: boolean
+        description: Indicates if the current user dislikes this card or not
+      pin:
+        type: boolean
+        description: Indicates if the current user has pinned this card or not
+      likeCounter:
+        type: integer
+        format: int32
+        description: How many likes this card has
+      dislikeCounter:
+        type: integer
+        format: int32
+        description: How many likes this card has
+      pinCounter:
+        type: integer
+        format: int32
+        description: How many likes this card has
+      facebookCounter:
+        type: integer
+        format: int32
+        description: How many shares with facebook this card has
+      googleplusCounter:
+        type: integer
+        format: int32
+        description: How many shares with Google+ this card has
+      linkedinCounter:
+        type: integer
+        format: int32
+        description: How many shares with LinkedIn this card has
+      twitterCounter:
+        type: integer
+        format: int32
+        description: How many shares with twitter this card has
+      commentCounter:
+        type: integer
+        format: int32
+        description: How many comments this card has
+      likeActivityId:
+        type: integer
+        format: int64
+        description: The internal ID of the activity with the user's like
+      dislikeActivityId:
+        type: integer
+        format: int64
+        description: The internal ID of the activity with the user's dislike
+      pinActivityId:
+        type: integer
+        format: int64
+        description: The internal ID of the activity with the user's pin
+
+  Permission:
+    properties:
+      securityLevel:
+        type: integer
+        format: int32
+      groups:
+        type: array
+        items:
+          type: string
+      users:
+        type: array
+        items:
+          type: string
+
+  Locale:
+    properties:
+      languages:
+        type: array
+        items:
+          type: string
+      region:
+        type: array
+        items:
+          type: string
+      geoCode:
+        type: string
+        description: Geo code from where this card was created
+      address:
+        type: string
+        description: Address from where this card was created
+      placeName:
+        type: string
+        description: Name of the place from where this card was created
+
+
+
   Error:
     properties:
       code:
