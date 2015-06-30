@@ -93,12 +93,15 @@
     <form id='api_selector'>
       <div class='input'>
         <select id="input_baseUrl" name="baseUrl">
-            <option value="/cards/cards_api.yaml">Cards API</option>
-            <option value="/cards/curation_api.yaml">Curation API</option>
+            <option value="/admin/admin_api.yaml">Admin API</option>
+            <option value="/cards/cards_api.yaml" selected>Cards API</option>
+            <option value="/curation/curation_api.yaml">Curation API</option>
+            <option value="/i18n/i18n_api.yaml">I18n API</option>
+            <option value="/theme/theme_api.yaml">Theme API</option>
         </select>
            <!--   <input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/> -->
       </div>
-      <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
+      <!--  <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div> -->
       <div class='input'><a id="explore" href="#">Explore</a></div>
     </form>
   </div>

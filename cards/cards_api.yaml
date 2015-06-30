@@ -7,6 +7,10 @@ info:
     Card is the basic representation for content inside Smart Canvas. Every piece of content hosted 
     in the product was previously cardified. This API allows you to create and get cards from Smart
     Canvas. 
+  contact:
+    name: Smart Canvas Dev Team
+    url: http://www.smartcanvas.com
+    email: support@smartcanvas.com
   version: "1.0.0"
 # the domain of the service
 host: api.smartcanvas.com
@@ -18,37 +22,45 @@ basePath: /v1
 produces:
   - application/json
 paths:
-  /cards:
+  /{tenant}/cards:
     get:
       summary: Search Cards
+      operationId: searchCards
+      tags:
+        - Cards
       description: |
-        The Search Cards endpoint returns a *list of cards* that matches a
+        The Search Cards endpoint returns a list of cards that matches a
         specific search criteria. All cards returned may also contain information
         such as attachments, user activities (like, dislike, etc) and comments.
       parameters:
-        - name: accessToken
-          in: query
+        - name: x-access-token
+          in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: q
-          in: query
-          description: Search term that will be used to filter content. Example = google cloud
-          required: true
-          type: string
-        - name: personId
-          in: query
-          description: Represents the person of whom Smart Canvas will make this request on behalf of
-          required: false
-          type: integer
-          format: int64
-        - name: authToken
-          in: query
+        - name: x-auth-token
+          in: header
           description: |
             If this request is being made on behalf of a specific person (personId != null), this parameter
             must be provided to avoid getting FORBIDDEN errors.
           required: false
           type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: q
+          in: query
+          description: Search term that will be used to filter content. Example = google cloud
+          required: true
+          type: string
+        - name: person
+          in: query
+          description: Email of the person for whom Smart Canvas will make this request on behalf of
+          required: false
+          type: integer
+          format: int64
         - name: locale
           in: query
           description: |
@@ -101,21 +113,21 @@ paths:
             List of related entities to include in the response. If ommited, the response will contain all entities.
             Possible values are: categoryNames, author, contentProvider, attachments, userActivities, permission, locale.
             Example = author,attachments
-
           type: string
-      tags:
-        - Card
       responses:
         200:
-          description: An array of cards
+          description: A paged array of cards
           schema:
             type: array
             items:
               $ref: '#/definitions/Card'
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+
 definitions:
   Card:
     properties:
@@ -386,8 +398,6 @@ definitions:
       placeName:
         type: string
         description: Name of the place from where this card was created
-
-
 
   Error:
     properties:

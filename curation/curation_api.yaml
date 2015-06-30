@@ -31,6 +31,13 @@ paths:
           description: Access token required to make this API call
           required: true
           type: string 
+        - name: authToken
+          in: query
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: false
+          type: string
         - name: q
           in: query
           description: Search term that will be used to filter content. Example = google cloud
@@ -42,13 +49,6 @@ paths:
           required: false
           type: integer
           format: int64
-        - name: authToken
-          in: query
-          description: |
-            If this request is being made on behalf of a specific person (personId != null), this parameter
-            must be provided to avoid getting FORBIDDEN errors.
-          required: false
-          type: string
         - name: locale
           in: query
           description: |

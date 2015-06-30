@@ -1,0 +1,232 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Theme API
+  description: |
+    This is a set of services that allows administrators to configure and change Smart Canvas
+    look-and-feel using APIs. 
+  contact:
+    name: Smart Canvas Dev Team
+    url: http://www.smartcanvas.com
+    email: support@smartcanvas.com
+  version: "1.0.0"
+# the domain of the service
+host: api.smartcanvas.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /{tenant}/theme/color:
+    put:
+      summary: Define or change Smart Canvas colors
+      operationId: defineColors
+      tags:
+        - Colors
+      description: |
+        Allows administrators to redefine the color palette of Smart Canvas
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: color
+          in: query
+          description: |
+            | Color | Description |
+            |-------|-------------|
+            | color.primary | primary color |
+            | color.accent | accent color |
+          required: true
+          type: string
+        - name: value
+          in: query
+          description: The value of the color. Example = 0FAB7E
+          required: true
+          type: string
+      responses:
+        200:
+          description: The definition was changed correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /{tenant}/theme/buckets:
+    put:
+      summary: Creates or change a Bucket configuration 
+      operationId: defineBucket
+      tags:
+        - Buckets
+      description: |
+        Allows administrators to create of redefine the behavior of a specific bucket
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: mnemonic
+          in: query
+          description: Mnemonic that identifies the bucket inside Smart Canvas
+          required: true
+          type: string
+        - name: title
+          in: query
+          description: Bucket title. This value supports i18n.
+          required: true
+          type: string
+        - name: titleFont
+          in: query
+          description: Font used to render the bucket title.
+          required: false
+          type: string
+        - name: titleAlign
+          in: query
+          description: Bucket title alignment (center, right or left). Default = right.
+          required: false
+          type: string
+        - name: titleColor
+          in: query
+          description: Title color (example = 00FAB3)
+          required: false
+          type: string
+        - name: bgcolor
+          in: query
+          description: Background color (example = 00FAB3)
+          required: false
+          type: string
+        - name: bgimage
+          in: query
+          description: Background image (URL) for this bucket
+          required: false
+          type: string
+        - name: bucketCanvas
+          in: query
+          description: Bucket Canvas mnemonic to render this bucket
+          required: false
+          type: string
+        - name: highlightFirstCard
+          in: query
+          description: If this bucket should highlight the first card (true or false). Default = false.
+          required: false
+          type: string
+        - name: limit
+          in: query
+          description: |
+            Maximum number of cards to be shown in this bucket. If not set, Smart Canvas will incremental load the content.
+            If set and the number of cards exceeds this value, Smart Canvas will render the "See More" button.
+          required: false
+          type: integer
+          format: int32
+      responses:
+        200:
+          description: The definition was changed correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /{tenant}/theme/menus:
+    put:
+      summary: Creates or redefine a menu item inside Smart Canvas
+      operationId: defineMenus
+      tags:
+        - Menus
+      description: |
+        Allows administrators to create or redefine a menu item
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: locale
+          in: query
+          description: |
+            The locale to which this menu item should be created / redefined. If ommited, the default locale will be used.
+          required: false
+          type: string
+        - name: label
+          in: query
+          description: The label for this menu. 
+          required: true
+          type: string
+        - name: pos
+          in: query
+          description: |
+            The position that whis menu should be placed. First position = 1. If ommited, Smart Canvas will append to the end of the menu.
+          required: false
+          type: integer
+          format: int32
+        - name: keyword
+          in: query
+          description: The keywork (search term) associated with this menu item.
+          required: true
+          type: string
+      responses:
+        200:
+          description: The definition was changed correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+
+  Error:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

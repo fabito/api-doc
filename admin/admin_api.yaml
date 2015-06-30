@@ -1,0 +1,171 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Admin API
+  description: |
+    This is a set of services that allows administrators to configure and change Smart Canvas
+    settings and features using APIs
+  contact:
+    name: Smart Canvas Dev Team
+    url: http://www.smartcanvas.com
+    email: support@smartcanvas.com
+  version: "1.0.0"
+# the domain of the service
+host: api.smartcanvas.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /{tenant}/admin/settings:
+    put:
+      summary: Define or change a setting
+      operationId: defineSetting
+      tags:
+        - Settings
+      description: |
+        Smart Canvas has several settings that defines its behavior. This service allows developers
+        to change this settings. Read carefully this documentation to understand what are the configurable
+        settings and the possible values. The access token should be provided to make calls to this endpoint,
+        and the scope 'smartcanvas.admin' must be granted to this token.
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: locale
+          in: query
+          description: |
+            Some settings are internationalizable (has different values based on the locale). For these ones,
+            this attribute is required. See the table bellow to check which ones falls in this category.
+          required: false
+          type: string
+        - name: setting
+          in: query
+          description: |
+            | Setting mnemonic | Description | I18n |
+            |------------------|-------------|------|
+            | share.facebook (true or false) | if cards are shareable on Facebook | No |
+            | share.twitter (true or false) | if cards are shareable on Twitter | No |
+            | share.linkedin (true or false) | if cards are shareable on LinkedIn | No |
+            | share.googleplus (true or false) | if cards are shareable on Google plus | No |
+            | apikey.linkedin | LinkedIn API Key | Yes |
+            | facebook.id | Facebook ID | Yes |
+            | twitter.id | Twitter ID | Yes |
+            | linkedin.id | LinkedIn ID | Yes |
+            | googleplus.id | Google Plus ID | Yes |
+            | follow.enable (true or false) | if the follow button is enabled or not | No |
+            | domain.whitelist | comma-separated list of domains allowed to login in this site | No |
+            | page.title.prefix | page title prefix | No |
+            | pin.domains | domains allowed to pin | No |
+            | tableau.server | IP or address of Tableau server | No |
+            | tableau.trusted.proxy | Tableau trusted proxy IP address | No |
+            | tableau.user | Tableau user for the trusted proxy | No |
+            | home.path | Home path | No |
+
+          required: true
+          type: string
+        - name: value
+          in: query
+          description: Value for this setting. Make sure that you have read the possible values for the setting you want to modify.
+          required: true
+          type: string
+      responses:
+        200:
+          description: The definition was changed correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /{tenant}/admin/actions/cards:
+    put:
+      summary: Defines the behavior for creating a new card inside Smart Canvas
+      operationId: defineCardCreation
+      tags:
+        - Actions
+      description: |
+        Allows administrators to redefine the action of creating a new card inside Smart Canvas
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: locale
+          in: query
+          description: |
+            The locale to which this action should be performed. If ommited, the default locale will be used.
+          required: false
+          type: string
+        - name: context
+          in: query
+          description: Context to which this action should be available. Example = /highlights
+          required: true
+          type: string
+        - name: roles
+          description: |
+            Comma-separated list of roles that will be allowed to create a new card.
+            Possible values are = moderator, publisher, admin, all. If ommited, the default is "moderator, publisher".
+          required: false
+          type: string
+        - name: label
+          description: Label to trigger this action. This value supports i18n.
+          required: false
+          type: string
+        - name: categories
+          description: Comma-separated list of categories to be automatically added to this card after creation.
+          required: false
+          type: string
+      responses:
+        200:
+          description: The definition was changed correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+
+  Error:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

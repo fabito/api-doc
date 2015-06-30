@@ -1,0 +1,151 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: I18n API
+  description: |
+    This is a set of services that allows administrators to configure and change Smart Canvas
+    internationalization features. That includes locales, labels etc.
+  contact:
+    name: Smart Canvas Dev Team
+    url: http://www.smartcanvas.com
+    email: support@smartcanvas.com
+  version: "1.0.0"
+# the domain of the service
+host: api.smartcanvas.com
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /{tenant}/i18n/labels:
+    put:
+      summary: Redefine labels
+      operationId: defineI18nLabel
+      tags:
+        - Labels
+      description: |
+        Allows administrators to define labels for different regions and languages. Using this API you can redefine a reserved
+        label (listed bellow on the label attribute) or configure any label needed on your custom cards.
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: locale
+          in: query
+          description: |
+            The locale in format [language]-[region]. Example = en-us, pt-br etc. If ommited, the change will be applied
+            to the default locale.
+          required: false
+          type: string
+        - name: label
+          in: query
+          description: |
+            | Label | Description |
+            |-------|-------------|
+            | share.email | share by email |
+            | share.suffix | suffix used when sharing content |
+            | share.title | title used to indicates that the content is shareable on social networks |
+            | page.title | page title |
+            | search | search label |
+            | user.menu.mypage | my page on user's menu |
+            | user.menu.pendingcards | Pending cards on user's menu |
+            | content.originalpost | reference to the original post |
+            | content.linksource | reference to the link source |
+            | content.notfound | message when no cards has been found |
+            | follow.description | description used in the follow button |
+            | follow.title | title used on the follow window |
+            | follow.label | label used on the follow button |
+          required: true
+          type: string
+        - name: value
+          in: query
+          description: Value for this label.
+          required: true
+          type: string
+      responses:
+        200:
+          description: The label was defined correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /{tenant}/i18n/locales:
+    put:
+      summary: Creates and redefines locales
+      operationId: defineI18nLocale
+      tags:
+        - Locale
+      description: |
+        Allows administrators to create or redefine locales. Each locale has a region (example: us - United States or br - Brazil)
+        and a language (example: en - English or pt - Portuguese).
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: locale
+          in: query
+          description: |
+            The locale in format [language]-[region]. Example = en-us, pt-br etc.
+          required: true
+          type: string
+        - name: label
+          in: query
+          description: Label to be used for that locale when selecting it on Smart Canvas
+          required: true
+          type: string
+      responses:
+        200:
+          description: The label was defined correctly
+        403:
+          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+
+  Error:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
