@@ -31,17 +31,6 @@
       host = pathArray[2];
       var url = protocol + '//' + host + e.options[e.selectedIndex].value;
       
-      /*
-      if (url && url.length > 1) {
-        url = decodeURIComponent(url[1]);
-      } else {
-        pathArray = location.href.split( '/' );
-        protocol = pathArray[0];
-        host = pathArray[2];
-        url = protocol + '//' + host + "/cards/swagger.yaml";
-      }
-      */
-      
       window.swaggerUi = new SwaggerUi({
         url: url,
         dom_id: "swagger-ui-container",
@@ -104,7 +93,7 @@
     <form id='api_selector'>
       <div class='input'>
         <select id="input_baseUrl" name="baseUrl">
-            <option value="/cards/swagger.yaml">Cards API</option>
+            <option value="/cards/cards_api.yaml">Cards API</option>
         </select>
            <!--   <input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/> -->
       </div>
