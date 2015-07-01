@@ -21,7 +21,7 @@ basePath: /v1
 produces:
   - application/json
 paths:
-  /{tenant}/theme/color:
+  /{tenant}/colors:
     put:
       summary: Define or change Smart Canvas colors
       operationId: defineColors
@@ -42,6 +42,13 @@ paths:
             must be provided to avoid getting FORBIDDEN errors.
           required: true
           type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
         - name: tenant
           in: path
           description: The tenant mnemonic
@@ -64,14 +71,24 @@ paths:
       responses:
         200:
           description: The definition was changed correctly
-        403:
-          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
-        default:
-          description: Unexpected error
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
 
-  /{tenant}/theme/buckets:
+  /{tenant}/buckets:
     put:
       summary: Creates or change a Bucket configuration 
       operationId: defineBucket
@@ -92,6 +109,13 @@ paths:
             must be provided to avoid getting FORBIDDEN errors.
           required: true
           type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
         - name: tenant
           in: path
           description: The tenant mnemonic
@@ -153,14 +177,24 @@ paths:
       responses:
         200:
           description: The definition was changed correctly
-        403:
-          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
-        default:
-          description: Unexpected error
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
 
-  /{tenant}/theme/menus:
+  /{tenant}/menus:
     put:
       summary: Creates or redefine a menu item inside Smart Canvas
       operationId: defineMenus
@@ -181,6 +215,13 @@ paths:
             must be provided to avoid getting FORBIDDEN errors.
           required: true
           type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
         - name: tenant
           in: path
           description: The tenant mnemonic
@@ -212,16 +253,112 @@ paths:
       responses:
         200:
           description: The definition was changed correctly
-        403:
-          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
-        default:
-          description: Unexpected error
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+
+  /{tenant}/fab-settings:
+    put:
+      summary: Float Action Button Settings
+      operationId: defineFloatActionButton
+      tags:
+        - Buttons
+      description: |
+        Administrates the settings and behavior of the FAB (float action button) on Smart Canvas
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: true
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: locale
+          in: query
+          description: |
+            The locale to which this action should be performed. If ommited, the default locale will be used.
+          required: false
+          type: string
+        - name: context
+          in: query
+          description: Context to which this action should be available. Example = /highlights
+          required: true
+          type: string
+        - name: roles
+          description: |
+            Comma-separated list of roles that will be allowed to create a new card.
+            Possible values are = moderator, publisher, admin, all. If ommited, the default is "moderator, publisher".
+          required: false
+          type: string
+        - name: label
+          description: Label to trigger this action. This value supports i18n.
+          required: false
+          type: string
+        - name: categories
+          description: Comma-separated list of categories to be automatically added to this card after creation.
+          required: false
+          type: string
+      responses:
+        200:
+          description: The definition was changed correctly
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
 
 definitions:
 
-  Error:
+  BasicError:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+  ErrorWithFields:
     properties:
       code:
         type: integer

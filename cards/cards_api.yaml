@@ -23,9 +23,67 @@ produces:
   - application/json
 paths:
   /{tenant}/cards:
+    put:
+      summary: Save Card
+      operationId: saveCard
+      tags:
+        - Cards
+      description: |
+        Creates a new card inside Smart Canvas
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this request is being made on behalf of a specific person (personId != null), this parameter
+            must be provided to avoid getting FORBIDDEN errors.
+          required: false
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: card
+          in: body
+          description: Card to be created
+          required: true
+          schema:
+            $ref: '#/definitions/Card' 
+      responses:
+        200:
+          description: Card have been created successfully
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+
     get:
-      summary: Search Cards
-      operationId: searchCards
+      summary: List Cards
+      operationId: listCards
       tags:
         - Cards
       description: |
@@ -45,6 +103,13 @@ paths:
             must be provided to avoid getting FORBIDDEN errors.
           required: false
           type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
         - name: tenant
           in: path
           description: The tenant mnemonic
@@ -57,10 +122,21 @@ paths:
           type: string
         - name: person
           in: query
-          description: Email of the person for whom Smart Canvas will make this request on behalf of
+          description: Person id or email. Smart Canvas will lookup in this order.
           required: false
-          type: integer
-          format: int64
+          type: string
+        - name: status
+          in: query
+          description: |
+            | Card status | Description |
+            |-------------|-------------|
+            | any | Any status |
+            | approved | Card has already been approved by the moderator |
+            | pending | Card is waiting for moderation |
+            | expired | Card is expired |
+          required: false
+          type: string
+          default: approved
         - name: locale
           in: query
           description: |
@@ -78,6 +154,14 @@ paths:
           required: false
           type: integer
           format: int32
+          default: 10
+        - name: offset
+          in: query
+          description: Offset to be applied to the result set. If ommited, offset = 0.
+          required: false
+          type: integer
+          format: int32
+          default: 0
         - name: initDate
           in: query
           description: Returns only cards with publishing date >= this parameter. Format = yyyy-mm-dd
@@ -121,12 +205,114 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Card'
-        403:
-          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
-        default:
-          description: Unexpected error
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+
+  /{tenant}/cards/{id}:
+    get:
+      summary: Fetch a Card
+      operationId: fetchCard
+      tags:
+        - Cards
+      description: |
+        Returns a specific card from Smart Canvas
+      parameters:
+        - name: x-access-token
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-auth-token
+          in: header
+          description: |
+            If this parameter is not provided, only public cards can be fecthed this way.
+          required: false
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: tenant
+          in: path
+          description: The tenant mnemonic
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: ID or mnemonic (Smart Canvas will search in this order) or a card. 
+          required: true
+          type: string
+        - name: person
+          in: query
+          description: Person id or email. Smart Canvas will lookup in this order.
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: |
+            | Card status | Description |
+            |-------------|-------------|
+            | any | Any status |
+            | approved | Card has already been approved by the moderator |
+            | pending | Card is waiting for moderation |
+            | expired | Card is expired |
+          required: false
+          type: string
+          default: approved
+        - name: fields
+          in: query
+          description: |
+            The fields to include in the response. If ommited, the response will contain all fields.
+            See documentation for possible values. Example = title,summary,content.
+          required: false
+          type: string
+        - name: embed
+          in: query
+          description: |
+            List of related entities to include in the response. If ommited, the response will contain all entities.
+            Possible values are: categoryNames, author, contentProvider, attachments, userActivities, permission, locale.
+            Example = author,attachments
+          type: string
+      responses:
+        200:
+          description: A card, if found. An empty JSON, if not found.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Card'
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
 
 definitions:
   Card:
@@ -399,7 +585,15 @@ definitions:
         type: string
         description: Name of the place from where this card was created
 
-  Error:
+  BasicError:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+  ErrorWithFields:
     properties:
       code:
         type: integer

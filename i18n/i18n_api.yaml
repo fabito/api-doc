@@ -21,7 +21,7 @@ basePath: /v1
 produces:
   - application/json
 paths:
-  /{tenant}/i18n/labels:
+  /{tenant}/labels:
     put:
       summary: Redefine labels
       operationId: defineI18nLabel
@@ -43,6 +43,13 @@ paths:
             must be provided to avoid getting FORBIDDEN errors.
           required: true
           type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
         - name: tenant
           in: path
           description: The tenant mnemonic
@@ -83,19 +90,29 @@ paths:
       responses:
         200:
           description: The label was defined correctly
-        403:
-          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
-        default:
-          description: Unexpected error
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
 
-  /{tenant}/i18n/locales:
+  /{tenant}/locales:
     put:
       summary: Creates and redefines locales
       operationId: defineI18nLocale
       tags:
-        - Locale
+        - Locales
       description: |
         Allows administrators to create or redefine locales. Each locale has a region (example: us - United States or br - Brazil)
         and a language (example: en - English or pt - Portuguese).
@@ -112,6 +129,13 @@ paths:
             must be provided to avoid getting FORBIDDEN errors.
           required: true
           type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
         - name: tenant
           in: path
           description: The tenant mnemonic
@@ -131,16 +155,34 @@ paths:
       responses:
         200:
           description: The label was defined correctly
-        403:
-          description: Access denied. Occurs when the access and/or auth token are not provided or they are invalid.
-        default:
-          description: Unexpected error
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
 
 definitions:
 
-  Error:
+  BasicError:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+
+  ErrorWithFields:
     properties:
       code:
         type: integer
