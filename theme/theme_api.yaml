@@ -17,7 +17,7 @@ host: api.smartcanvas.com
 schemes:
   - https
 # will be prefixed to all paths
-basePath: /v1
+basePath: /theme/v1
 produces:
   - application/json
 paths:
@@ -59,8 +59,9 @@ paths:
           description: |
             | Color | Description |
             |-------|-------------|
-            | color.primary | primary color |
-            | color.accent | accent color |
+            | color.primary | primary palette mnemonic |
+            | color.accent | accent palette mnemonic |
+            | color.warn | warn palette mnemonic |
           required: true
           type: string
         - name: value
@@ -126,10 +127,26 @@ paths:
           description: Mnemonic that identifies the bucket inside Smart Canvas
           required: true
           type: string
+        - name: contextPattern
+          in: query
+          description: Context pattern (regex) to which this bucket should be visible. Example = /highlights
+          required: true
+          type: string
+        - name: pos
+          in: query
+          description: |
+            The position that this bucket should be placed. First position = 1. 
+            If ommited, Smart Canvas will append to the end of the context.
+          type: string
+        - name: queryStrategy
+          in: query
+          description: Query mnemonic to be used to get content for this bucket.
+          required: true
+          type: string
         - name: title
           in: query
           description: Bucket title. This value supports i18n.
-          required: true
+          required: false
           type: string
         - name: titleFont
           in: query
@@ -194,14 +211,14 @@ paths:
           schema:
             $ref: '#/definitions/BasicError'
 
-  /{tenant}/menus:
+  /{tenant}/tabs:
     put:
-      summary: Creates or redefine a menu item inside Smart Canvas
+      summary: Creates or redefine a tab
       operationId: defineMenus
       tags:
-        - Menus
+        - Tabs
       description: |
-        Allows administrators to create or redefine a menu item
+        Allows administrators to create or redefine a menu item in the toolbar
       parameters:
         - name: x-access-token
           in: header
@@ -230,24 +247,24 @@ paths:
         - name: locale
           in: query
           description: |
-            The locale to which this menu item should be created / redefined. If ommited, the default locale will be used.
+            The locale to which this tab should be created / redefined. If ommited, the default locale will be used.
           required: false
           type: string
         - name: label
           in: query
-          description: The label for this menu. 
+          description: The label for this tab. 
           required: true
           type: string
         - name: pos
           in: query
           description: |
-            The position that whis menu should be placed. First position = 1. If ommited, Smart Canvas will append to the end of the menu.
+            The position that this tab should be placed. First position = 1. If ommited, Smart Canvas will append to the end of the tabs.
           required: false
           type: integer
           format: int32
-        - name: keyword
+        - name: q
           in: query
-          description: The keywork (search term) associated with this menu item.
+          description: The query (search term) associated with this tab.
           required: true
           type: string
       responses:
@@ -309,23 +326,44 @@ paths:
             The locale to which this action should be performed. If ommited, the default locale will be used.
           required: false
           type: string
-        - name: context
+        - name: contextPattern
           in: query
           description: Context to which this action should be available. Example = /highlights
           required: true
           type: string
+        - name: pos
+          in: query
+          description: |
+            The position that this button should be placed. First position = 1. 
+            If ommited, Smart Canvas will append to the end of the button list.
+          type: string
+        - name: target
+          in: query
+          description: |
+            self or blank (action performed in the same window or a new one)
+          required: false
+          type: string
+        - name: href
+          in: query
+          description: URI to be triggered
+          required: true
+          type: string
         - name: roles
+          in: query
           description: |
             Comma-separated list of roles that will be allowed to create a new card.
             Possible values are = moderator, publisher, admin, all. If ommited, the default is "moderator, publisher".
           required: false
           type: string
         - name: label
-          description: Label to trigger this action. This value supports i18n.
+          in: query
+          description: |
+            Label to trigger this action. This value supports i18n.
           required: false
           type: string
-        - name: categories
-          description: Comma-separated list of categories to be automatically added to this card after creation.
+        - name: meta
+          in: query
+          description: JSON object with meta information relevant to the client.
           required: false
           type: string
       responses:
