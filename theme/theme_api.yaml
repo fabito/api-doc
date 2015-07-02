@@ -9,7 +9,7 @@ info:
   contact:
     name: Smart Canvas Dev Team
     url: http://www.smartcanvas.com
-    email: support@smartcanvas.com
+    email: dev@smartcanvas.com
   version: "1.0.0"
 # the domain of the service
 host: api.smartcanvas.com
@@ -21,7 +21,7 @@ basePath: /theme/v1
 produces:
   - application/json
 paths:
-  /{tenant}/colors:
+  /colors:
     put:
       summary: Define or change Smart Canvas colors
       operationId: defineColors
@@ -30,12 +30,12 @@ paths:
       description: |
         Allows administrators to redefine the color palette of Smart Canvas
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this request is being made on behalf of a specific person (personId != null), this parameter
@@ -49,11 +49,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: color
           in: query
           description: |
@@ -89,7 +84,7 @@ paths:
           schema:
             $ref: '#/definitions/BasicError'
 
-  /{tenant}/buckets:
+  /buckets:
     put:
       summary: Creates or change a Bucket configuration 
       operationId: defineBucket
@@ -98,12 +93,12 @@ paths:
       description: |
         Allows administrators to create of redefine the behavior of a specific bucket
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this request is being made on behalf of a specific person (personId != null), this parameter
@@ -117,11 +112,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: mnemonic
           in: query
           description: Mnemonic that identifies the bucket inside Smart Canvas
@@ -211,7 +201,7 @@ paths:
           schema:
             $ref: '#/definitions/BasicError'
 
-  /{tenant}/tabs:
+  /tabs:
     put:
       summary: Creates or redefine a tab
       operationId: defineMenus
@@ -220,12 +210,12 @@ paths:
       description: |
         Allows administrators to create or redefine a menu item in the toolbar
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this request is being made on behalf of a specific person (personId != null), this parameter
@@ -239,11 +229,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: locale
           in: query
           description: |
@@ -287,7 +272,7 @@ paths:
           schema:
             $ref: '#/definitions/BasicError'
 
-  /{tenant}/fab-settings:
+  /fab-settings:
     put:
       summary: Float Action Button Settings
       operationId: defineFloatActionButton
@@ -296,12 +281,12 @@ paths:
       description: |
         Administrates the settings and behavior of the FAB (float action button) on Smart Canvas
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this request is being made on behalf of a specific person (personId != null), this parameter
@@ -315,11 +300,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: locale
           in: query
           description: |

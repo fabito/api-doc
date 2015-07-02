@@ -6,11 +6,16 @@ info:
   description: |
     Card is the basic representation for content inside Smart Canvas. Every piece of content hosted 
     in the product was previously cardified. This API allows you to create and get cards from Smart
-    Canvas. 
+    Canvas.
+
+    Scopes related with this resource:
+    - smartcanvas.cards.read: can read cards from Smart Canvas
+    - smartcanvas.cards.write: can create a new card inside Smart Canvas. Can delete or update your own cards.
+    - smartcanvas.cards.moderate: can moderate cards from Smart Canvas, can delete or update any card
   contact:
     name: Smart Canvas Dev Team
     url: http://www.smartcanvas.com
-    email: support@smartcanvas.com
+    email: dev@smartcanvas.com
   version: "1.0.0"
 # the domain of the service
 host: api.smartcanvas.com
@@ -22,21 +27,23 @@ basePath: /card/v1
 produces:
   - application/json
 paths:
-  /{tenant}/cards:
+  /cards:
     post:
       summary: Create a Card
       operationId: saveCard
       tags:
         - Cards
       description: |
-        Creates a new card inside Smart Canvas
+        Creates a new card inside Smart Canvas.
+        This operation requires the scope 'smartcanvas.cards.write' or 'smartcanvas.cards.moderate'.
+        If 'isAutoModerated' attribute is set to 'true', you must have 'smartcanvas.cards.moderate' privilege.
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             Authorization token. The person must have publisher or admin privileges.
@@ -49,11 +56,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: card
           in: body
           description: Card to be created
@@ -90,16 +92,16 @@ paths:
       tags:
         - Cards
       description: |
-        The Search Cards endpoint returns a list of cards that matches a
-        specific search criteria. All cards returned may also contain information
+        Returns a list of cards that matches a specific search criteria. All cards returned may also contain information
         such as attachments, user activities (like, dislike, etc) and comments.
+        This operation requires the scope 'smartcanvas.cards.read'
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this request is being made on behalf of a specific person, this parameter
@@ -113,11 +115,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: q
           in: query
           description: |
@@ -192,11 +189,46 @@ paths:
           description: Comma-separated list of meta-tags. Returns only cards that have this specific tag.
           required: false
           type: string
-        - name: curationStrategy
+        - name: authorId
           in: query
-          description: Curation strategy to be used for this request. If ommited, it will uses the default strategy.
+          description: Return only cards posted by a specific author.
           required: false
           type: string
+        - name: communityId
+          in: query
+          description: Return only cards posted in a specific community.
+          required: false
+          type: string
+        - name: providerId
+          in: query
+          description: Return only cards posted from a specific provider
+          required: false
+          type: string
+        - name: jsonExtendedData
+          in: query
+          description: |
+            Return only cards that contains this specific json extended data. Note: the card must have been ingested with it.
+          required: false
+          type: string
+        - name: curationStrategy
+          in: query
+          description: |
+            | Curation (sort) Stretegy | Description |
+            |--------------------------|-------------|
+            | date (default) | sort by date |
+            | popularity | sort by popularity |
+            | recommendation | sort by recommendation |
+          required: false
+          type: string
+        - name: decayment
+          description: |
+            Decayment factor to be applied to the card's sort strategy based on its age, regardless the curation strategy.
+            This number should be a decimal between 0 and 1. 0 (default) means that no decayment will be applied to the search order, 
+            and 1 means that the most aggressive decayment will be applied.
+          required: false
+          type: number
+          format: float
+          default: 0
         - name: fields
           in: query
           description: |
@@ -208,8 +240,7 @@ paths:
           in: query
           description: |
             Comma-separated list of related entities to include in the response. If ommited, the response will contain all entities.
-            Possible values are: categoryNames, author, contentProvider, attachments, userActivities, permission, locale.
-            Example = author,attachments
+            See documentation for possible values. Examples = author, contentProvider, attachments, userActivities, permission, locale.
           type: string
       responses:
         200:
@@ -239,21 +270,22 @@ paths:
           schema:
             $ref: '#/definitions/BasicError'
 
-  /{tenant}/cards/{id}:
+  /cards/{id}:
     put:
       summary: Update a Card
       operationId: updateCard
       tags:
         - Cards
       description: |
-        Updates a card inside Smart Canvas
+        Updates a card inside Smart Canvas.
+        This operation requires the scope 'smartcanvas.cards.write' or 'smartcanvas.cards.moderate'.
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             Authorization token. The person must have publisher or admin privileges.
@@ -266,15 +298,23 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: id
           in: path
           description: Card ID or mnemonic
           required: true
+          type: string
+        - name: fields
+          in: query
+          description: |
+            Comma-separated fields to be considered in the update process. If ommited, all fields will be updated.
+            See documentation for possible values. Examples = title,summary,content.
+          required: false
+          type: string
+        - name: embed
+          in: query
+          description: |
+            Comma-separated list of related entities to be updated. If ommited, all entities will be updated.
+            See documentation for possible values. Examples = author, contentProvider, attachments, userActivities, permission, locale.
           type: string
         - name: card
           in: body
@@ -312,14 +352,15 @@ paths:
       tags:
         - Cards
       description: |
-        Updates a card inside Smart Canvas
+        Updates a card inside Smart Canvas.
+        This operation requires the scope 'smartcanvas.cards.write' or 'smartcanvas.cards.moderate'.
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             Authorization token. The person must have admin privileges.
@@ -332,11 +373,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: id
           in: path
           description: Card ID or mnemonic
@@ -371,14 +407,15 @@ paths:
       tags:
         - Cards
       description: |
-        Returns a specific card from Smart Canvas
+        Returns a specific card from Smart Canvas.
+        This operation requires the scope 'smartcanvas.cards.read'.
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this parameter is not provided, only public cards can be fecthed this way.
@@ -391,11 +428,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: id
           in: path
           description: ID or mnemonic (Smart Canvas will search in this order) or a card. 
@@ -455,21 +487,292 @@ paths:
           schema:
             $ref: '#/definitions/BasicError'
 
-  /{tenant}/moderation/{cardId}:
+  /cards/{cardId}/comments:
+    post:
+      summary: Comment a Card
+      operationId: commentCard
+      tags:
+        - Comments
+      description: |
+        Creates a new comment to a specific card. The person cannot be anonymous.
+        This operation requires the scope 'smartcanvas.cards.read'.
+      parameters:
+        - name: x-client-id
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-access-token
+          in: header
+          description: |
+            Authorization token.
+          required: true
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: cardId
+          in: path
+          description: Card id or mnemonic
+          required: true
+          type: string
+        - name: text
+          in: query
+          description: Comment text or content
+          required: true
+          type: string
+      responses:
+        200:
+          description: Comment created successfully
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        404:
+          description: Page not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+
+    get:
+      summary: List Comments
+      operationId: listComments
+      tags:
+        - Comments
+      description: |
+        List the comments of a specific card
+        This operation requires the scope 'smartcanvas.cards.read'
+      parameters:
+        - name: x-client-id
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-access-token
+          in: header
+          description: |
+            Authorization token.
+          required: true
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: cardId
+          in: path
+          description: Card id or mnemonic
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: |
+            Maximum number of comments to retrieve. If ommited, Smart Canvas will use the default page size
+            configured for this tenant. Maximum value for this attribute is 100.
+            Example: 10
+          required: false
+          type: integer
+          format: int32
+          default: 10
+        - name: offset
+          in: query
+          description: Offset to be applied to the result set. If ommited, offset = 0.
+          required: false
+          type: integer
+          format: int32
+          default: 0
+        - name: sort
+          in: query
+          description: Sort criteria. Two values are supported here = 'asc' or 'desc'. Default = asc
+          required: false
+          type: string
+          default: asc
+      responses:
+        200:
+          description: An array of comments
+          schema:
+            $ref: '#/definitions/Comment'
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        404:
+          description: Page not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+
+  /cards/{cardId}/comments/{id}:
+    put:
+      summary: Update a Comment
+      operationId: updateComment
+      tags:
+        - Comments
+      description: |
+        Updates the comment of a card. The person cannot be anonymous. You can only update your own comments.
+        This operation requires the scope 'smartcanvas.cards.read'.
+      parameters:
+        - name: x-client-id
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-access-token
+          in: header
+          description: |
+            Authorization token.
+          required: true
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: cardId
+          in: path
+          description: Card id or mnemonic
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: Comment ID
+          required: true
+          type: string
+        - name: text
+          in: query
+          description: New text for the comment
+          required: true
+          type: string
+      responses:
+        200:
+          description: Comment updated successfully
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        404:
+          description: Page not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+    delete:
+      summary: Delete a Comment
+      operationId: deleteComment
+      tags:
+        - Comments
+      description: |
+        Delete a comment from a card. You can only delete your own comments. Moderators can delete any comment.
+        This operation requires the scope 'smartcanvas.cards.read' or 'smartcanvas.cards.moderate'
+      parameters:
+        - name: x-client-id
+          in: header
+          description: Access token required to make this API call
+          required: true
+          type: string 
+        - name: x-access-token
+          in: header
+          description: |
+            Authorization token.
+          required: true
+          type: string
+        - name: x-suppress-response-codes
+          in: header
+          description: |
+            If 'true', the HTTP response is always 200. Default = 'false'
+          required: false
+          type: boolean
+          default: false
+        - name: cardId
+          in: path
+          description: Card id or mnemonic
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: Comment ID
+          required: true
+          type: string
+      responses:
+        200:
+          description: Comment deleted successfully
+        400:
+          description: Bad request. The request made was not ok. Invalid parameter values or missing ones.
+          schema:
+            $ref: '#/definitions/ErrorWithFields'
+        401:
+          description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        403: 
+          description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
+          schema:
+            $ref: '#/definitions/BasicError'
+        404:
+          description: Page not found.
+          schema:
+            $ref: '#/definitions/BasicError'
+        500:
+          description: Internal server error. something is going wrong inside Smart Canvas.
+          schema:
+            $ref: '#/definitions/BasicError'
+
+  /moderation/{cardId}:
     put:
       summary: Moderate a Card
       operationId: moderateCard
       tags:
         - Moderation
       description: |
-        Moderates a specific card
+        Moderates a specific card.
+        This operation requires the scope 'smartcanvas.cards.moderate'.
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             Authorization token. Must have moderator or admin privileges.
@@ -482,16 +785,17 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: cardId
           in: path
           description: Card id or mnemonic
           required: true
           type: string
+        - name: action
+          in: query
+          description: Action to be taken. Possible values are = approve, reject. Default = approve
+          required: false
+          type: string
+          default: approve
       responses:
         200:
           description: Card moderated successfully
@@ -515,7 +819,6 @@ paths:
           description: Internal server error. something is going wrong inside Smart Canvas.
           schema:
             $ref: '#/definitions/BasicError'
-
 
 definitions:
   Card:
@@ -563,9 +866,6 @@ definitions:
       jsonExtendedData:
         type: string
         description: JSON data with extra information saved with this card
-      preferredCanvas:
-        type: string
-        description: Mnemonic of the preferred Card Canvas to render this card
       categories:
         type: array
         items: 
@@ -613,22 +913,24 @@ definitions:
     properties:
       authorId:
         type: string
-        description: Author identification in Smart Canvas. That's a Person ID or email.
+        description: |
+          Author identification in Smart Canvas. That's a Person ID or email. If not provided, this author
+          doesn't exist in Smart Canvas (but it's still valid).
       authorDisplayName:
         type: string
         description: Author display name
       authorAlias:
         type: string
-        description: Author authorAlias
+        description: Author authorAlias (* TODO - o que eh isso?)
       authorImageURL:
         type: string
         description: Author image URL
 
   Community:
     properties:
-      communityMnemonic:
+      communityId:
         type: string
-        description: Community Mnemonic
+        description: Community ID or mnemonic
       communityDisplayName:
         type: string
         description: User-friendly community display name
@@ -637,7 +939,7 @@ definitions:
     properties:
       providerId:
         type: string
-        description: Identifies the provider, the original source of this content. Example = googleplus
+        description: Identifies the provider (ID or mnemonic), the original source of this content. Example = googleplus
       providerContentId:
         type: string
         description: Identifies this content on its original source
@@ -659,9 +961,31 @@ definitions:
       contentURL:
         type: string
         description: Content URL for this attachment
+      images:
+        type: array
+        items:
+          $ref: '#/definitions/Image'
+        description: Images contained in this attachment
+      maxImageHeight:
+        type: integer
+        format: int32
+        description: The max image height found for this attachment  (* TODO - vale manter?)
+      maxImageWidth:
+        type: integer
+        format: int32
+        description: The max image width found for this attachment (* TODO - vale manter?)
+      embedURL:
+        type: string
+        format: Embed URL for this attachment (* TODO - o que eh isso?)
+      jsonExtendedData:
+        type: string
+        description: JSON data with extra information saved with this attachment
+
+  Image:
+    properties:
       imageURL:
         type: string
-        description: Image URL for this attachment
+        description: Image URL
       imageType:
         type: string
         description: Type of this image
@@ -676,96 +1000,44 @@ definitions:
       originalImageURL:
         type: string
         description: Original image URL on the content provider
-      fullImageHeight:
-        type: integer
-        format: int32
-        description: Full image height
-      fullImageWidth:
-        type: integer
-        format: int32
-        description: Full image width
-      embedURL:
-        type: string
-        format: Embed URL for this attachment
-      tableau:
-        type: array
-        items:
-          $ref: '#/definitions/Tableau'
-
-  Tableau:
-    properties:
-      tableauUrl:
-        type: string
-        description: Tableau URL
-      tableauSource:
-        type: string
-        description: Tableau source
-      worksheetName:
-        type: string
-        description: Tableau worksheet name
-      tableauOriginalImage:
-        type: string
-        description: Tableau original image
-      tableauCachedImage:
-        type: string
-        description: Tableau cached image
-
 
   UserActivity:
     properties:
-      like:
-        type: boolean
-        description: Indicates if the current user likes this card or not
-      dislike:
-        type: boolean
-        description: Indicates if the current user dislikes this card or not
-      pin:
-        type: boolean
-        description: Indicates if the current user has pinned this card or not
-      likeCounter:
+      type:
+        type: string
+        description: type of this user activity (example = like, dislike etc)
+      counter:
         type: integer
         format: int32
-        description: How many likes this card has
-      dislikeCounter:
-        type: integer
-        format: int32
-        description: How many likes this card has
-      pinCounter:
-        type: integer
-        format: int32
-        description: How many likes this card has
-      facebookCounter:
-        type: integer
-        format: int32
-        description: How many shares with facebook this card has
-      googleplusCounter:
-        type: integer
-        format: int32
-        description: How many shares with Google+ this card has
-      linkedinCounter:
-        type: integer
-        format: int32
-        description: How many shares with LinkedIn this card has
-      twitterCounter:
-        type: integer
-        format: int32
-        description: How many shares with twitter this card has
-      commentCounter:
-        type: integer
-        format: int32
-        description: How many comments this card has
-      likeActivityId:
+        description: how many of this activities this card has
+      target:
+        type: string
+        description: optional value that represents the target of this action. Examples = facebook, twitter, linkedin (for sharing)
+      userActivityId:
         type: integer
         format: int64
-        description: The internal ID of the activity with the user's like
-      dislikeActivityId:
+        description: the internal ID of this activity for the user. Null if the user has no activity of this type.
+
+  Comment:
+    properties:
+      id:
         type: integer
         format: int64
-        description: The internal ID of the activity with the user's dislike
-      pinActivityId:
+        description: Comment ID
+      personId:
         type: integer
         format: int64
-        description: The internal ID of the activity with the user's pin
+        description: Person ID
+      personEmail: 
+        type: string
+        description: Person email
+      text:
+        type: string
+        description: Comment text (content)
+      createDate:
+        type: integer
+        format: int64
+        description: Timestamp of this comment creationg
 
   Permission:
     properties:

@@ -9,7 +9,7 @@ info:
   contact:
     name: Smart Canvas Dev Team
     url: http://www.smartcanvas.com
-    email: support@smartcanvas.com
+    email: dev@smartcanvas.com
   version: "1.0.0"
 # the domain of the service
 host: api.smartcanvas.com
@@ -21,7 +21,7 @@ basePath: /v1
 produces:
   - application/json
 paths:
-  /{tenant}/settings:
+  /settings:
     put:
       summary: Define or change a setting
       operationId: defineSetting
@@ -33,12 +33,12 @@ paths:
         settings and the possible values. The access token should be provided to make calls to this endpoint,
         and the scope 'smartcanvas.admin' must be granted to this token.
       parameters:
-        - name: x-access-token
+        - name: x-client-id
           in: header
           description: Access token required to make this API call
           required: true
           type: string 
-        - name: x-auth-token
+        - name: x-access-token
           in: header
           description: |
             If this request is being made on behalf of a specific person (personId != null), this parameter
@@ -52,11 +52,6 @@ paths:
           required: false
           type: boolean
           default: false
-        - name: tenant
-          in: path
-          description: The tenant mnemonic
-          required: true
-          type: string
         - name: locale
           in: query
           description: |
