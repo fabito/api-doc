@@ -4,7 +4,7 @@ swagger: '2.0'
 info:
   title: Cards API
   description: |
-    Card is the basic representation for content inside Smart Canvas. Every piece of content hosted 
+    Card is the basic representation for content inside Smart Canvas. Every piece of content hosted
     in the product was previously cardified. This API allows you to create and get cards from Smart
     Canvas.
 
@@ -42,7 +42,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -61,7 +61,7 @@ paths:
           description: Card to be created
           required: true
           schema:
-            $ref: '#/definitions/Card' 
+            $ref: '#/definitions/Card'
       responses:
         200:
           description: Card have been created successfully
@@ -73,7 +73,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -100,7 +100,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -221,9 +221,10 @@ paths:
           required: false
           type: string
         - name: decayment
+          in: query
           description: |
             Decayment factor to be applied to the card's sort strategy based on its age, regardless the curation strategy.
-            This number should be a decimal between 0 and 1. 0 (default) means that no decayment will be applied to the search order, 
+            This number should be a decimal between 0 and 1. 0 (default) means that no decayment will be applied to the search order,
             and 1 means that the most aggressive decayment will be applied.
           required: false
           type: number
@@ -257,7 +258,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -284,7 +285,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -321,7 +322,7 @@ paths:
           description: Card to be created
           required: true
           schema:
-            $ref: '#/definitions/Card' 
+            $ref: '#/definitions/Card'
       responses:
         200:
           description: Card have been created successfully
@@ -333,7 +334,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -359,7 +360,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -389,7 +390,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -414,7 +415,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -430,7 +431,7 @@ paths:
           default: false
         - name: id
           in: path
-          description: ID or mnemonic (Smart Canvas will search in this order) or a card. 
+          description: ID or mnemonic (Smart Canvas will search in this order) or a card.
           required: true
           type: string
         - name: status
@@ -474,7 +475,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -501,7 +502,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -536,7 +537,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -562,7 +563,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -617,7 +618,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -644,7 +645,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -684,7 +685,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -709,7 +710,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -744,7 +745,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -771,7 +772,7 @@ paths:
           in: header
           description: Access token required to make this API call
           required: true
-          type: string 
+          type: string
         - name: x-access-token
           in: header
           description: |
@@ -807,7 +808,7 @@ paths:
           description: Unauthorized. The request requires a user authentication but the access token or auth token was not found.
           schema:
             $ref: '#/definitions/BasicError'
-        403: 
+        403:
           description: Forbidden. The user (auth token) doesn't have the proper scope to access that information.
           schema:
             $ref: '#/definitions/BasicError'
@@ -868,24 +869,20 @@ definitions:
         description: JSON data with extra information saved with this card
       categories:
         type: array
-        items: 
+        items:
           type: string
         description: Categories (tags) associated to this card
       meta-tags:
         type: array
-        items: 
+        items:
           type: string
         description: |
           Meta-tags associated to this card. Meta-tags are intented to be used by system / API only, not visible for end-users.
       author:
-        type: array
-        items:
-          $ref: '#/definitions/Author'
+        $ref: '#/definitions/Author'
         description: Author of this card
       contentProvider:
-        type: array
-        items:
-          $ref: '#/definitions/ContentProvider'
+        $ref: '#/definitions/ContentProvider'
         description: Information about the original source of this card
       attachments:
         type: array
@@ -893,21 +890,15 @@ definitions:
           $ref: '#/definitions/Attachment'
         description: Attachments contained in this card
       userActivities:
-        type: array
-        items:
-          $ref: '#/definitions/UserActivity'
+        $ref: '#/definitions/UserActivity'
+        readOnly: true
         description: Information about user activities such as like, share etc
       permission:
-        type: array
-        items:
-          $ref: '#/definitions/Permission'
+        $ref: '#/definitions/Permission'
         description: Security model data, includes security level and user / group permissions
       locale:
-        type: array
-        items:
-          $ref: '#/definitions/Locale'
+        $ref: '#/definitions/Locale'
         description: Locale and i18n information
-      
 
   Author:
     properties:
@@ -934,7 +925,7 @@ definitions:
       communityDisplayName:
         type: string
         description: User-friendly community display name
-  
+
   ContentProvider:
     properties:
       providerId:
@@ -1028,7 +1019,7 @@ definitions:
         type: integer
         format: int64
         description: Person ID
-      personEmail: 
+      personEmail:
         type: string
         description: Person email
       text:
